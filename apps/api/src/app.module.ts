@@ -4,12 +4,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProfileModule } from './profile/profile.module';
 import { RedisModule } from './redis/redis.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
     PrismaModule,
     RedisModule,
+    StorageModule,
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -23,6 +26,7 @@ import { RedisModule } from './redis/redis.module';
       },
     ]),
     AuthModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

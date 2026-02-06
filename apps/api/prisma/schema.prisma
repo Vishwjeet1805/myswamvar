@@ -12,15 +12,55 @@ enum UserRole {
   admin
 }
 
+enum ContactVisibility {
+  all
+  premium
+  none
+}
+
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  phone        String?
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(user)
-  emailVerified Boolean @default(false) @map("email_verified")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id            String    @id @default(uuid())
+  email         String    @unique
+  phone         String?
+  passwordHash  String    @map("password_hash")
+  role          UserRole  @default(user)
+  emailVerified Boolean   @default(false) @map("email_verified")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  profile       Profile?
 
   @@map("users")
+}
+
+model Profile {
+  id                     String            @id @default(uuid())
+  userId                 String            @unique
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName            String
+  dob                    DateTime
+  gender                 String
+  location               Json?
+  education              String?
+  occupation             String?
+  bio                    String?
+  preferences            Json?
+  privacyContactVisibleTo ContactVisibility @default(all) @map("privacy_contact_visible_to")
+  profileVerified        Boolean           @default(false) @map("profile_verified")
+  createdAt              DateTime          @default(now()) @map("created_at")
+  updatedAt              DateTime          @updatedAt @map("updated_at")
+  photos                 ProfilePhoto[]
+
+  @@map("profiles")
+}
+
+model ProfilePhoto {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean  @default(false) @map("is_primary")
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("profile_photos")
 }

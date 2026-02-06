@@ -49,13 +49,21 @@ export default function Home() {
           <p className="text-sm text-stone-600">
             Logged in as <span className="font-medium text-stone-900">{user.email}</span>
           </p>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-          >
-            Log out
-          </button>
+          <div className="flex gap-3">
+            <Link
+              href="/profile"
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+            >
+              My profile
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              Log out
+            </button>
+          </div>
         </div>
       ) : (
         <nav className="mt-8 flex gap-4">
