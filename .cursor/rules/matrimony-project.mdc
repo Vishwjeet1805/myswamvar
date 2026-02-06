@@ -1,0 +1,60 @@
+---
+description: Matrimony project tech stack, layout, conventions, and FRD context
+alwaysApply: true
+---
+
+# Matrimony Project – Cursor Rules
+
+## Tech Stack
+
+- **Frontend**: Next.js 14+ (App Router), TypeScript, Tailwind CSS, shadcn/ui (or Radix-based components)
+- **Backend**: Node.js with NestJS (TypeScript), Prisma or Drizzle
+- **Database**: PostgreSQL (profiles, users, subscriptions, messages), Redis (sessions, cache, chat presence)
+- **Auth**: JWT (access + refresh), bcrypt/argon2 for passwords
+- **Chat**: Socket.io or ws; messages in PostgreSQL
+- **File storage**: S3-compatible (MinIO in Docker or AWS S3)
+- **Deployment**: Docker + Docker Compose
+
+## Repo Layout (Monorepo)
+
+- `apps/web` – Next.js frontend
+- `apps/api` – NestJS backend API
+- `packages/shared` – Shared types, constants, validation schemas (e.g. Zod)
+
+## Conventions
+
+- TypeScript strict mode everywhere; avoid `any` and unsafe casts
+- API: REST or consistent RPC; use Zod (or class-validator) for request validation
+- Errors: structured, actionable; log once with context; return consistent API error shape
+- No `print` for logging; use a logger (e.g. NestJS Logger, Pino)
+
+## Security
+
+- No secrets in code; use env vars (e.g. `.env.example` only in repo)
+- Validate and sanitize all inputs; parameterized queries only (ORM/Prisma)
+- Passwords: bcrypt or argon2; JWT best practices (short-lived access, refresh rotation)
+- AuthZ: check role/permissions close to resource access; admin routes behind admin guard
+
+## Testing
+
+- Unit tests for business logic (auth, horoscope, limits)
+- Integration tests for API and DB (e.g. Jest, Supertest)
+- E2E for critical flows: registration, search, chat (e.g. Playwright)
+
+## Code Review
+
+Align with org "Code Review Standards and Behavior": correctness first, then security, safety, tests, maintainability, performance, compliance.
+
+## FRD Reference
+
+Epic and stories live in `jira/` (see `jira/EPIC-MATRIMONY.md` and `jira/stories/*.md`). Modules:
+
+1. Registration & Authentication
+2. Profile Management
+3. Search & Matchmaking
+4. Horoscope Matching
+5. Chat System
+6. Premium Membership
+7. Admin Panel
+
+Use these when implementing or reviewing code so behaviour matches the FRD.
