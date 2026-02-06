@@ -28,6 +28,13 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   profile       Profile?
+  shortlists    Shortlist[]
+  interestsSent     Interest[] @relation("InterestFrom")
+  interestsReceived Interest[] @relation("InterestTo")
+  savedSearches SavedSearch[]
+  conversationsAsUser1 Conversation[] @relation("ConversationUser1")
+  conversationsAsUser2 Conversation[] @relation("ConversationUser2")
+  messagesSent       Message[]        @relation("MessageSender")
 
   @@map("users")
 }
@@ -39,6 +46,7 @@ model Profile {
   displayName            String
   dob                    DateTime
   gender                 String
+  religion               String?
   location               Json?
   education              String?
   occupation             String?
@@ -46,10 +54,21 @@ model Profile {
   preferences            Json?
   privacyContactVisibleTo ContactVisibility @default(all) @map("privacy_contact_visible_to")
   profileVerified        Boolean           @default(false) @map("profile_verified")
+  timeOfBirth            String?           @map("time_of_birth")
+  placeOfBirth           String?           @map("place_of_birth")
+  birthLatLong           Json?             @map("birth_lat_long")
   createdAt              DateTime          @default(now()) @map("created_at")
   updatedAt              DateTime          @updatedAt @map("updated_at")
   photos                 ProfilePhoto[]
+  shortlistedBy          Shortlist[]
+  horoscopeMatchesAsA    HoroscopeMatch[]  @relation("ProfileA")
+  horoscopeMatchesAsB    HoroscopeMatch[]  @relation("ProfileB")
 
+  @@index([gender])
+  @@index([dob])
+  @@index([education])
+  @@index([occupation])
+  @@index([religion])
   @@map("profiles")
 }
 
@@ -63,4 +82,98 @@ model ProfilePhoto {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("profile_photos")
+}
+
+enum InterestStatus {
+  pending
+  accepted
+  declined
+}
+
+model Shortlist {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profileId String   @map("profile_id")
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, profileId])
+  @@index([userId])
+  @@map("shortlists")
+}
+
+model Interest {
+  id         String         @id @default(uuid())
+  fromUserId String         @map("from_user_id")
+  fromUser   User           @relation("InterestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String         @map("to_user_id")
+  toUser     User           @relation("InterestTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  status     InterestStatus @default(pending)
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  @@unique([fromUserId, toUserId])
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("interests")
+}
+
+model SavedSearch {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  filters   Json
+  notify    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("saved_searches")
+}
+
+model HoroscopeMatch {
+  id           String   @id @default(uuid())
+  profileAId   String   @map("profile_a_id")
+  profileA     Profile  @relation("ProfileA", fields: [profileAId], references: [id], onDelete: Cascade)
+  profileBId   String   @map("profile_b_id")
+  profileB     Profile  @relation("ProfileB", fields: [profileBId], references: [id], onDelete: Cascade)
+  matchPercent Float    @map("match_percent")
+  doshaResult  Json
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([profileAId, profileBId])
+  @@index([profileAId])
+  @@index([profileBId])
+  @@map("horoscope_matches")
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  user1Id   String    @map("user1_id")
+  user2Id   String    @map("user2_id")
+  user1     User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2     User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now()) @map("created_at")
+  messages  Message[]
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String       @map("sender_id")
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  content        String       @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
 }

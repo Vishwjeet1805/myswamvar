@@ -49,10 +49,40 @@ export default function Home() {
           <p className="text-sm text-stone-600">
             Logged in as <span className="font-medium text-stone-900">{user.email}</span>
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/search"
+              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+            >
+              Search
+            </Link>
+            <Link
+              href="/shortlist"
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              Shortlist
+            </Link>
+            <Link
+              href="/interests"
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              Interests
+            </Link>
+            <Link
+              href="/chat"
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              Messages
+            </Link>
+            <Link
+              href="/saved-searches"
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              Saved searches
+            </Link>
             <Link
               href="/profile"
-              className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
             >
               My profile
             </Link>

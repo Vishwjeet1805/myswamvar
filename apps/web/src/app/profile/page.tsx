@@ -32,6 +32,8 @@ export default function ProfilePage() {
     bio: '',
     preferences: {},
     privacyContactVisibleTo: 'all',
+    timeOfBirth: '',
+    placeOfBirth: '',
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
@@ -59,6 +61,9 @@ export default function ProfilePage() {
           bio: p.bio ?? '',
           preferences: p.preferences ?? {},
           privacyContactVisibleTo: p.privacyContactVisibleTo,
+          timeOfBirth: p.timeOfBirth ?? '',
+          placeOfBirth: p.placeOfBirth ?? '',
+          birthLatLong: p.birthLatLong ?? undefined,
         });
       }
     } catch {
@@ -93,6 +98,8 @@ export default function ProfilePage() {
         education: form.education || undefined,
         occupation: form.occupation || undefined,
         bio: form.bio || undefined,
+        timeOfBirth: form.timeOfBirth || undefined,
+        placeOfBirth: form.placeOfBirth || undefined,
       };
       if (profile) {
         const updated = await updateProfile(accessToken, body);
@@ -407,6 +414,52 @@ export default function ProfilePage() {
                   <option value="none">Nobody</option>
                 </select>
               </div>
+              <div className="border-t border-stone-200 pt-4">
+                <h3 className="text-sm font-medium text-stone-700 mb-3">
+                  Birth Details (for horoscope matching)
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="timeOfBirth"
+                      className="block text-sm font-medium text-stone-700"
+                    >
+                      Time of birth (HH:MM)
+                    </label>
+                    <input
+                      id="timeOfBirth"
+                      type="text"
+                      placeholder="14:30"
+                      value={form.timeOfBirth}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, timeOfBirth: e.target.value }))
+                      }
+                      className="mt-1 block w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="placeOfBirth"
+                      className="block text-sm font-medium text-stone-700"
+                    >
+                      Place of birth
+                    </label>
+                    <input
+                      id="placeOfBirth"
+                      type="text"
+                      placeholder="City, State, Country"
+                      value={form.placeOfBirth}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, placeOfBirth: e.target.value }))
+                      }
+                      className="mt-1 block w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-stone-500">
+                  Birth details are optional but required for horoscope matching.
+                </p>
+              </div>
               <button
                 type="submit"
                 disabled={saving}
@@ -598,6 +651,52 @@ export default function ProfilePage() {
                   <option value="premium">Premium members only</option>
                   <option value="none">Nobody</option>
                 </select>
+              </div>
+              <div className="border-t border-stone-200 pt-4">
+                <h3 className="text-sm font-medium text-stone-700 mb-3">
+                  Birth Details (for horoscope matching)
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="edit-timeOfBirth"
+                      className="block text-sm font-medium text-stone-700"
+                    >
+                      Time of birth (HH:MM)
+                    </label>
+                    <input
+                      id="edit-timeOfBirth"
+                      type="text"
+                      placeholder="14:30"
+                      value={form.timeOfBirth}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, timeOfBirth: e.target.value }))
+                      }
+                      className="mt-1 block w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="edit-placeOfBirth"
+                      className="block text-sm font-medium text-stone-700"
+                    >
+                      Place of birth
+                    </label>
+                    <input
+                      id="edit-placeOfBirth"
+                      type="text"
+                      placeholder="City, State, Country"
+                      value={form.placeOfBirth}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, placeOfBirth: e.target.value }))
+                      }
+                      className="mt-1 block w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-stone-500">
+                  Birth details are optional but required for horoscope matching.
+                </p>
               </div>
               <div className="flex gap-2">
                 <button

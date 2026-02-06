@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
   UseInterceptors,
@@ -15,11 +16,30 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { UserResponse } from '@matrimony/shared';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt.guard';
+import { HoroscopeService } from '../horoscope/horoscope.service';
 import { ProfileService } from './profile.service';
 
 @Controller('profiles')
 export class ProfileController {
-  constructor(private readonly profile: ProfileService) {}
+  constructor(
+    private readonly profile: ProfileService,
+    private readonly horoscope: HoroscopeService,
+  ) {}
+
+  @Get('search')
+  @UseGuards(OptionalJwtAuthGuard)
+  async searchProfiles(
+    @Query() query: Record<string, string>,
+    @Req() req: { user?: UserResponse },
+  ) {
+    const viewer = req.user
+      ? {
+          userId: req.user.id,
+          isPremium: this.profile.isPremiumUser(req.user.id),
+        }
+      : null;
+    return this.profile.searchProfiles(query, viewer);
+  }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -91,5 +111,24 @@ export class ProfileController {
       throw new NotFoundException('Profile not found');
     }
     return profile;
+  }
+
+  @Get(':id/horoscope-match')
+  @UseGuards(JwtAuthGuard)
+  async getHoroscopeMatch(
+    @Param('id') profileId: string,
+    @Req() req: { user: UserResponse },
+  ) {
+    const viewerProfile = await this.profile.getMyProfile(req.user.id);
+    if (!viewerProfile) {
+      throw new NotFoundException('Your profile not found');
+    }
+    const match = await this.horoscope.getMatch(viewerProfile.id, profileId);
+    if (!match) {
+      throw new NotFoundException(
+        'Horoscope match not available. Both profiles need complete birth details.',
+      );
+    }
+    return match;
   }
 }

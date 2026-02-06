@@ -40,11 +40,18 @@ export const createProfileBodySchema = z.object({
     state: z.string().max(100).optional(),
     country: z.string().max(100).optional(),
   }).optional(),
+  religion: z.string().max(100).optional(),
   education: z.string().max(200).optional(),
   occupation: z.string().max(200).optional(),
   bio: z.string().max(2000).optional(),
   preferences: profilePreferencesSchema.optional(),
   privacyContactVisibleTo: contactVisibilitySchema.optional(),
+  timeOfBirth: z.string().regex(/^\d{2}:\d{2}$/, 'Time must be HH:MM format').optional(),
+  placeOfBirth: z.string().max(200).optional(),
+  birthLatLong: z.object({
+    lat: z.number().min(-90).max(90),
+    lng: z.number().min(-180).max(180),
+  }).optional(),
 }).strict();
 
 export const updateProfileBodySchema = createProfileBodySchema.partial();
@@ -68,6 +75,7 @@ export interface ProfileResponse {
   displayName: string;
   dob: string;
   gender: string;
+  religion: string | null;
   location: { city?: string; state?: string; country?: string } | null;
   education: string | null;
   occupation: string | null;
@@ -75,6 +83,9 @@ export interface ProfileResponse {
   preferences: ProfilePreferences | null;
   privacyContactVisibleTo: ContactVisibility;
   profileVerified: boolean;
+  timeOfBirth: string | null;
+  placeOfBirth: string | null;
+  birthLatLong: { lat: number; lng: number } | null;
   photos: ProfilePhotoResponse[];
   createdAt: string;
   updatedAt: string;
@@ -86,6 +97,7 @@ export interface PublicProfileResponse {
   displayName: string;
   dob: string;
   gender: string;
+  religion: string | null;
   location: { city?: string; state?: string; country?: string } | null;
   education: string | null;
   occupation: string | null;
@@ -112,3 +124,14 @@ export const PROFILE_PHOTO_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 /** Max number of profile photos per user */
 export const PROFILE_PHOTO_MAX_COUNT = 10;
+
+/** Horoscope match result */
+export interface HoroscopeMatchResponse {
+  matchPercent: number;
+  doshaResult: {
+    mangalDosha: boolean;
+    nadiDosha: boolean;
+    bhakootDosha: boolean;
+    summary: string;
+  };
+}
