@@ -9,17 +9,24 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { UserResponse } from '@matrimony/shared';
+import { AdminVerifyProfileDto } from '../dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { AdminService } from './admin.service';
 
+@ApiTags('admin')
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
+@ApiBearerAuth('JWT')
 export class AdminController {
   constructor(private readonly admin: AdminService) {}
 
   @Get('users')
+  @ApiOperation({ summary: 'List users', description: 'List users with optional status filter. Admin only.' })
+  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'approved', 'rejected'] })
+  @ApiResponse({ status: 200, description: 'List of users.' })
   async getUsers(
     @Query('status') status?: 'pending' | 'approved' | 'rejected',
     @Req() req?: { user: UserResponse },
@@ -28,6 +35,9 @@ export class AdminController {
   }
 
   @Post('users/:id/approve')
+  @ApiOperation({ summary: 'Approve user', description: 'Approve a pending user. Admin only.' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User approved.' })
   async approveUser(
     @Param('id') userId: string,
     @Req() req: { user: UserResponse },
@@ -40,6 +50,9 @@ export class AdminController {
   }
 
   @Post('users/:id/reject')
+  @ApiOperation({ summary: 'Reject user', description: 'Reject a pending user. Admin only.' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 200, description: 'User rejected.' })
   async rejectUser(
     @Param('id') userId: string,
     @Req() req: { user: UserResponse },
@@ -50,6 +63,9 @@ export class AdminController {
   }
 
   @Get('profiles')
+  @ApiOperation({ summary: 'List profiles', description: 'List profiles with optional verified filter. Admin only.' })
+  @ApiQuery({ name: 'verified', required: false, type: String, description: 'true | false' })
+  @ApiResponse({ status: 200, description: 'List of profiles.' })
   async getProfiles(
     @Query('verified') verified?: string,
   ) {
@@ -59,6 +75,10 @@ export class AdminController {
   }
 
   @Patch('profiles/:id/verify')
+  @ApiOperation({ summary: 'Verify profile', description: 'Set profile verification status. Admin only.' })
+  @ApiParam({ name: 'id', description: 'Profile ID' })
+  @ApiBody({ type: AdminVerifyProfileDto })
+  @ApiResponse({ status: 200, description: 'Profile verification updated.' })
   async verifyProfile(
     @Param('id') profileId: string,
     @Body() body: unknown,
@@ -73,11 +93,16 @@ export class AdminController {
   }
 
   @Get('subscriptions')
+  @ApiOperation({ summary: 'List subscriptions', description: 'List all subscriptions. Admin only.' })
+  @ApiResponse({ status: 200, description: 'List of subscriptions.' })
   async getSubscriptions() {
     return this.admin.getSubscriptions();
   }
 
   @Post('subscriptions/:id/cancel')
+  @ApiOperation({ summary: 'Cancel subscription (admin)', description: 'Cancel a subscription by ID. Admin only.' })
+  @ApiParam({ name: 'id', description: 'Subscription ID' })
+  @ApiResponse({ status: 200, description: 'Subscription cancelled.' })
   async cancelSubscription(
     @Param('id') subscriptionId: string,
     @Req() req: { user: UserResponse },
@@ -97,6 +122,8 @@ export class AdminController {
   }
 
   @Get('analytics')
+  @ApiOperation({ summary: 'Analytics', description: 'Get dashboard analytics. Admin only.' })
+  @ApiResponse({ status: 200, description: 'Analytics summary.' })
   async getAnalytics() {
     return this.admin.getAnalytics();
   }

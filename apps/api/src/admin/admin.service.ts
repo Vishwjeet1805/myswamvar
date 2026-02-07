@@ -11,6 +11,7 @@ import type {
   AdminUserListItem,
 } from '@matrimony/shared';
 import { adminVerifyProfileBodySchema } from '@matrimony/shared';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionService } from '../subscription/subscription.service';
 
@@ -258,7 +259,7 @@ export class AdminService {
         action,
         resourceType,
         resourceId,
-        payload: payload ?? undefined,
+        payload: (payload ?? undefined) as Prisma.InputJsonValue | undefined,
       },
     });
   }
