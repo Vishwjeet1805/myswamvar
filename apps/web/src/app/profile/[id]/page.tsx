@@ -6,12 +6,14 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   getProfileById,
   getMyProfile,
+  getProfileContact,
   addToShortlist,
   sendInterest,
   getHoroscopeMatch,
   type PublicProfile,
   type HoroscopeMatch,
 } from '@/lib/api';
+
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -21,6 +23,7 @@ export default function PublicProfilePage() {
   );
   const [isOwn, setIsOwn] = useState(false);
   const [loading, setLoading] = useState(true);
+
   const [shortlistSending, setShortlistSending] = useState(false);
   const [interestSending, setInterestSending] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
@@ -30,6 +33,11 @@ export default function PublicProfilePage() {
     undefined,
   );
   const [loadingHoroscope, setLoadingHoroscope] = useState(false);
+
+  const [contact, setContact] = useState<PublicProfile['contact'] | null>(null);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+
 
   const loadProfile = useCallback(async () => {
     if (!id) {
@@ -48,11 +56,36 @@ export default function PublicProfilePage() {
         token ? getMyProfile(token).catch(() => null) : Promise.resolve(null),
       ]);
       setProfile(p);
+
       setIsOwn(!!(myProfile && myProfile.id === id));
+
+      setContact(p.contact ?? null);
+
     } catch {
       setProfile(null);
     } finally {
       setLoading(false);
+    }
+  }, [id]);
+
+  const handleContact = useCallback(async () => {
+    setContactError(null);
+    setContactLoading(true);
+    try {
+      const token =
+        typeof window !== 'undefined'
+          ? localStorage.getItem('accessToken')
+          : null;
+      if (!token) {
+        setContactError('Log in to view contact details.');
+        return;
+      }
+      const info = await getProfileContact(id, token);
+      setContact(info);
+    } catch (err) {
+      setContactError(err instanceof Error ? err.message : 'Unable to load contact.');
+    } finally {
+      setContactLoading(false);
     }
   }, [id]);
 
@@ -201,14 +234,39 @@ export default function PublicProfilePage() {
             {profile.emailVerified && 'Email verified'}
           </p>
 
-          {profile.contact && (
+          {contact && (
             <div className="mt-4 rounded-lg bg-stone-50 p-3 text-sm">
               <p className="font-medium text-stone-700">Contact</p>
-              {profile.contact.email && (
-                <p className="text-stone-600">{profile.contact.email}</p>
+              {contact.email && (
+                <p className="text-stone-600">{contact.email}</p>
               )}
-              {profile.contact.phone && (
-                <p className="text-stone-600">{profile.contact.phone}</p>
+              {contact.phone && (
+                <p className="text-stone-600">{contact.phone}</p>
+              )}
+            </div>
+          )}
+          {!contact && (
+            <div className="mt-4 rounded-lg border border-stone-200 bg-white p-3 text-sm">
+              <p className="font-medium text-stone-700">Contact</p>
+              <p className="text-stone-500">Contact details are locked.</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleContact}
+                  disabled={contactLoading}
+                  className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-60"
+                >
+                  {contactLoading ? 'Checking…' : 'View contact'}
+                </button>
+                <Link
+                  href="/subscription"
+                  className="text-xs font-medium text-amber-700 hover:text-amber-800"
+                >
+                  Upgrade to premium
+                </Link>
+              </div>
+              {contactError && (
+                <p className="mt-2 text-xs text-rose-600">{contactError}</p>
               )}
             </div>
           )}

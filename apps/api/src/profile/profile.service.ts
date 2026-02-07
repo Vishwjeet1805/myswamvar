@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -23,6 +24,7 @@ import {
 import { HoroscopeService } from '../horoscope/horoscope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { SubscriptionService } from '../subscription/subscription.service';
 
 @Injectable()
 export class ProfileService {
@@ -32,6 +34,8 @@ export class ProfileService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly horoscope: HoroscopeService,
+    private readonly subscription: SubscriptionService,
+
   ) {}
 
   async getMyProfile(userId: string): Promise<ProfileResponse | null> {
@@ -199,6 +203,37 @@ export class ProfileService {
     return this.toPublicProfileResponse(profile, canSeeContact, false);
   }
 
+  async getContactForProfile(
+    profileId: string,
+    viewerUserId: string,
+  ): Promise<{ email?: string; phone?: string }> {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id: profileId },
+      include: { user: { select: { email: true, phone: true } } },
+    });
+    if (!profile) {
+      throw new NotFoundException('Profile not found.');
+    }
+    const isOwn = profile.userId === viewerUserId;
+    if (isOwn) {
+      return { email: profile.user.email, phone: profile.user.phone ?? undefined };
+    }
+
+    const isPremium = await this.subscription.isUserPremium(viewerUserId);
+    if (!isPremium) {
+      throw new ForbiddenException('Premium membership required to view contact.');
+    }
+
+    const canSee = this.canViewerSeeContact(
+      profile.privacyContactVisibleTo,
+      isPremium,
+    );
+    if (!canSee) {
+      throw new ForbiddenException('Contact details are not visible.');
+    }
+    return { email: profile.user.email, phone: profile.user.phone ?? undefined };
+  }
+
   async addPhoto(
     userId: string,
     file: Express.Multer.File,
@@ -319,6 +354,7 @@ export class ProfileService {
     privacy: ContactVisibility,
     viewerIsPremium: boolean,
   ): boolean {
+    if (!viewerIsPremium) return false;
     switch (privacy) {
       case 'all':
         return true;
@@ -532,8 +568,8 @@ export class ProfileService {
   }
 
   /** Stub: whether the user has active premium. Replace when Story 06 is implemented. */
-  isPremiumUser(_userId: string): boolean {
-    return false;
+  async isPremiumUser(userId: string): Promise<boolean> {
+    return this.subscription.isUserPremium(userId);
   }
 
   /** Build public profile response from DB profile (with user + photos). Used by shortlist/interest. */

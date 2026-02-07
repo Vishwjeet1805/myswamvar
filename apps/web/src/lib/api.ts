@@ -143,6 +143,45 @@ export interface PublicProfile {
   updatedAt: string;
 }
 
+export interface SubscriptionFeatures {
+  unlimitedChat: boolean;
+  contactAccess: boolean;
+  advancedFilters: boolean;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  interval: 'month' | 'year';
+  priceCents: number;
+  currency: string;
+  features: SubscriptionFeatures;
+  isActive: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  status:
+    | 'active'
+    | 'trialing'
+    | 'past_due'
+    | 'canceled'
+    | 'incomplete'
+    | 'incomplete_expired'
+    | 'unpaid';
+  provider: 'stripe' | 'mock';
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  plan: Plan;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionMe {
+  subscription: Subscription | null;
+  isPremium: boolean;
+}
+
 export interface CreateProfileBody {
   displayName: string;
   dob: string;
@@ -214,6 +253,16 @@ export async function getProfileById(
   return parseResponse<PublicProfile>(res);
 }
 
+export async function getProfileContact(
+  profileId: string,
+  accessToken: string,
+): Promise<{ email?: string; phone?: string }> {
+  const res = await fetch(`${apiBase()}/profiles/${profileId}/contact`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return parseResponse<{ email?: string; phone?: string }>(res);
+}
+
 export async function addProfilePhoto(
   accessToken: string,
   file: File,
@@ -249,6 +298,7 @@ export async function setPrimaryPhoto(
   });
   return parseResponse<ProfilePhoto>(res);
 }
+
 
 // --- Search API ---
 
@@ -438,6 +488,32 @@ export async function createSavedSearch(
   return parseResponse<SavedSearch>(res);
 }
 
+// --- Subscription API ---
+
+export async function getSubscriptionPlans(): Promise<Plan[]> {
+  const res = await fetch(`${apiBase()}/subscription/plans`);
+  return parseResponse<Plan[]>(res);
+}
+
+export async function getSubscriptionMe(accessToken: string): Promise<SubscriptionMe> {
+  const res = await fetch(`${apiBase()}/subscription/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return parseResponse<SubscriptionMe>(res);
+}
+
+export async function createSubscriptionCheckout(
+  accessToken: string,
+  body: { planId: string; successUrl?: string; cancelUrl?: string },
+): Promise<{ url: string; sessionId: string }> {
+  const res = await fetch(`${apiBase()}/subscription/checkout`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(body),
+  });
+  return parseResponse<{ url: string; sessionId: string }>(res);
+}
+
 export async function deleteSavedSearch(
   accessToken: string,
   id: string,
@@ -548,4 +624,158 @@ export async function getMessageLimit(
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   return parseResponse<MessageLimit>(res);
+}
+
+export async function cancelSubscription(
+  accessToken: string,
+): Promise<Subscription> {
+  const res = await fetch(`${apiBase()}/subscription/cancel`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<Subscription>(res);
+}
+
+// --- Admin API (requires admin role) ---
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  phone: string | null;
+  role: string;
+  status: 'pending' | 'approved' | 'rejected';
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+  profileId?: string;
+  displayName?: string;
+}
+
+export interface AdminProfile {
+  id: string;
+  userId: string;
+  displayName: string;
+  gender: string;
+  profileVerified: boolean;
+  verifiedAt: string | null;
+  verifiedBy: string | null;
+  verificationNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminSubscription {
+  id: string;
+  status: string;
+  provider: string;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+  plan: Plan;
+  createdAt: string;
+  updatedAt: string;
+  userEmail: string;
+  userId: string;
+}
+
+export interface AdminAnalytics {
+  totalUsers: number;
+  totalProfiles: number;
+  activeSubscriptions: number;
+  pendingUsers: number;
+  signupsLast7Days: number;
+  signupsLast30Days: number;
+}
+
+export async function adminGetUsers(
+  accessToken: string,
+  status?: 'pending' | 'approved' | 'rejected',
+): Promise<AdminUser[]> {
+  const q = status ? `?status=${encodeURIComponent(status)}` : '';
+  const res = await fetch(`${apiBase()}/admin/users${q}`, {
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<AdminUser[]>(res);
+}
+
+export async function adminApproveUser(
+  accessToken: string,
+  userId: string,
+): Promise<AdminUser> {
+  const res = await fetch(`${apiBase()}/admin/users/${userId}/approve`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<AdminUser>(res);
+}
+
+export async function adminRejectUser(
+  accessToken: string,
+  userId: string,
+): Promise<AdminUser> {
+  const res = await fetch(`${apiBase()}/admin/users/${userId}/reject`, {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<AdminUser>(res);
+}
+
+export async function adminGetProfiles(
+  accessToken: string,
+  verified?: boolean,
+): Promise<AdminProfile[]> {
+  const q =
+    verified === true
+      ? '?verified=true'
+      : verified === false
+        ? '?verified=false'
+        : '';
+  const res = await fetch(`${apiBase()}/admin/profiles${q}`, {
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<AdminProfile[]>(res);
+}
+
+export async function adminVerifyProfile(
+  accessToken: string,
+  profileId: string,
+  body: { verified: boolean; notes?: string },
+): Promise<AdminProfile> {
+  const res = await fetch(`${apiBase()}/admin/profiles/${profileId}/verify`, {
+    method: 'PATCH',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(body),
+  });
+  return parseResponse<AdminProfile>(res);
+}
+
+export async function adminGetSubscriptions(
+  accessToken: string,
+): Promise<AdminSubscription[]> {
+  const res = await fetch(`${apiBase()}/admin/subscriptions`, {
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<AdminSubscription[]>(res);
+}
+
+export async function adminCancelSubscription(
+  accessToken: string,
+  subscriptionId: string,
+): Promise<AdminSubscription> {
+  const res = await fetch(
+    `${apiBase()}/admin/subscriptions/${subscriptionId}/cancel`,
+    {
+      method: 'POST',
+      headers: authHeaders(accessToken),
+    },
+  );
+  return parseResponse<AdminSubscription>(res);
+}
+
+export async function adminGetAnalytics(
+  accessToken: string,
+): Promise<AdminAnalytics> {
+  const res = await fetch(`${apiBase()}/admin/analytics`, {
+    headers: authHeaders(accessToken),
+  });
+  return parseResponse<AdminAnalytics>(res);
 }

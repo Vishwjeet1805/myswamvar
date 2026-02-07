@@ -35,7 +35,7 @@ export class ProfileController {
     const viewer = req.user
       ? {
           userId: req.user.id,
-          isPremium: this.profile.isPremiumUser(req.user.id),
+          isPremium: await this.profile.isPremiumUser(req.user.id),
         }
       : null;
     return this.profile.searchProfiles(query, viewer);
@@ -103,7 +103,7 @@ export class ProfileController {
     const viewer = req.user
       ? {
           userId: req.user.id,
-          isPremium: this.profile.isPremiumUser(req.user.id),
+          isPremium: await this.profile.isPremiumUser(req.user.id),
         }
       : null;
     const profile = await this.profile.getProfileById(profileId, viewer);
@@ -112,6 +112,7 @@ export class ProfileController {
     }
     return profile;
   }
+
 
   @Get(':id/horoscope-match')
   @UseGuards(JwtAuthGuard)
@@ -130,5 +131,14 @@ export class ProfileController {
       );
     }
     return match;
+  }
+
+  @Get(':id/contact')
+  @UseGuards(JwtAuthGuard)
+  async getContact(
+    @Param('id') profileId: string,
+    @Req() req: { user: UserResponse },
+  ) {
+    return this.profile.getContactForProfile(profileId, req.user.id);
   }
 }

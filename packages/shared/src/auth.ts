@@ -41,12 +41,16 @@ export type RegisterBody = z.infer<typeof registerBodySchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;
 export type RefreshBody = z.infer<typeof refreshBodySchema>;
 
+/** User registration/approval status (admin workflow) */
+export type UserStatus = 'pending' | 'approved' | 'rejected';
+
 /** User as returned by API (no password) */
 export interface UserResponse {
   id: string;
   email: string;
   phone: string | null;
   role: UserRole;
+  status?: UserStatus;
   emailVerified: boolean;
   createdAt: string;
   updatedAt: string;

@@ -66,7 +66,8 @@ export class InterestService {
     });
     if (!toProfileWithUser) throw new NotFoundException('Profile not found');
 
-    const viewer = { userId, isPremium: this.profileService.isPremiumUser(userId) };
+    const isPremium = await this.profileService.isPremiumUser(userId);
+    const viewer = { userId, isPremium };
     const toProfilePublic = this.profileService.toPublicProfile(
       toProfileWithUser as Parameters<ProfileService['toPublicProfile']>[0],
       viewer,
@@ -100,7 +101,8 @@ export class InterestService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const viewer = { userId, isPremium: this.profileService.isPremiumUser(userId) };
+    const isPremium = await this.profileService.isPremiumUser(userId);
+    const viewer = { userId, isPremium };
     return interests
       .filter((i) => i.toUser.profile != null)
       .map((i) => {
@@ -138,7 +140,8 @@ export class InterestService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const viewer = { userId, isPremium: this.profileService.isPremiumUser(userId) };
+    const isPremium = await this.profileService.isPremiumUser(userId);
+    const viewer = { userId, isPremium };
     return interests
       .filter((i) => i.fromUser.profile != null)
       .map((i) => {
@@ -203,7 +206,8 @@ export class InterestService {
 
     const profile = updated.fromUser.profile;
     if (!profile) throw new NotFoundException('Sender profile not found');
-    const viewer = { userId, isPremium: this.profileService.isPremiumUser(userId) };
+    const isPremium = await this.profileService.isPremiumUser(userId);
+    const viewer = { userId, isPremium };
     const publicProfile = this.profileService.toPublicProfile(
       profile as Parameters<ProfileService['toPublicProfile']>[0],
       viewer,

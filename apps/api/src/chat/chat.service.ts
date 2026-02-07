@@ -75,8 +75,8 @@ export class ChatService {
     const conversations = await this.prisma.conversation.findMany({
       where: { OR: [{ user1Id: userId }, { user2Id: userId }] },
       include: {
-        user1: { select: { id: true }, include: { profile: { select: { id: true, displayName: true } } } },
-        user2: { select: { id: true }, include: { profile: { select: { id: true, displayName: true } } } },
+        user1: { include: { profile: { select: { id: true, displayName: true } } } },
+        user2: { include: { profile: { select: { id: true, displayName: true } } } },
         messages: {
           orderBy: { createdAt: 'desc' },
           take: 1,
@@ -183,7 +183,7 @@ export class ChatService {
   }
 
   async getMessageLimit(userId: string): Promise<MessageLimitResponse> {
-    const isPremium = this.profile.isPremiumUser(userId);
+    const isPremium = await this.profile.isPremiumUser(userId);
     const sentToday = isPremium ? 0 : await this.countMessagesSentToday(userId);
     const dailyLimit = FREE_DAILY_MESSAGE_LIMIT;
     const remainingToday = isPremium

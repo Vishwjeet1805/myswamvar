@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -12,22 +13,51 @@ enum UserRole {
   admin
 }
 
+enum UserStatus {
+  pending
+  approved
+  rejected
+}
+
 enum ContactVisibility {
   all
   premium
   none
 }
 
+enum PlanInterval {
+  month
+  year
+}
+
+enum SubscriptionStatus {
+  active
+  trialing
+  past_due
+  canceled
+  incomplete
+  incomplete_expired
+  unpaid
+}
+
+enum SubscriptionProvider {
+  stripe
+  mock
+}
+
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
+  id            String     @id @default(uuid())
+  email         String     @unique
   phone         String?
-  passwordHash  String    @map("password_hash")
-  role          UserRole  @default(user)
-  emailVerified Boolean   @default(false) @map("email_verified")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  passwordHash  String     @map("password_hash")
+  role          UserRole   @default(user)
+  status        UserStatus @default(approved) @map("status")
+  emailVerified Boolean    @default(false) @map("email_verified")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
   profile       Profile?
+  adminAuditLogs AdminAuditLog[]
+
   shortlists    Shortlist[]
   interestsSent     Interest[] @relation("InterestFrom")
   interestsReceived Interest[] @relation("InterestTo")
@@ -36,14 +66,17 @@ model User {
   conversationsAsUser2 Conversation[] @relation("ConversationUser2")
   messagesSent       Message[]        @relation("MessageSender")
 
+  subscription  Subscription?
+
+
   @@map("users")
 }
 
 model Profile {
   id                     String            @id @default(uuid())
-  userId                 String            @unique
+  userId                 String            @unique @map("user_id")
   user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  displayName            String
+  displayName            String            @map("display_name")
   dob                    DateTime
   gender                 String
   religion               String?
@@ -54,6 +87,9 @@ model Profile {
   preferences            Json?
   privacyContactVisibleTo ContactVisibility @default(all) @map("privacy_contact_visible_to")
   profileVerified        Boolean           @default(false) @map("profile_verified")
+  verifiedAt             DateTime?         @map("verified_at")
+  verifiedBy             String?           @map("verified_by")
+  verificationNotes      String?           @db.Text @map("verification_notes")
   timeOfBirth            String?           @map("time_of_birth")
   placeOfBirth           String?           @map("place_of_birth")
   birthLatLong           Json?             @map("birth_lat_long")
@@ -83,6 +119,7 @@ model ProfilePhoto {
 
   @@map("profile_photos")
 }
+
 
 enum InterestStatus {
   pending
@@ -176,4 +213,54 @@ model Message {
   @@index([senderId])
   @@index([createdAt])
   @@map("messages")
+}
+
+model Plan {
+  id           String       @id @default(uuid())
+  name         String
+  interval     PlanInterval
+  priceCents   Int          @map("price_cents")
+  currency     String       @default("usd")
+  features     Json
+  stripePriceId String?     @map("stripe_price_id")
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id                   String                @id @default(uuid())
+  userId               String                @unique @map("user_id")
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId               String                @map("plan_id")
+  plan                 Plan                  @relation(fields: [planId], references: [id])
+  status               SubscriptionStatus
+  provider             SubscriptionProvider  @default(stripe)
+  stripeCustomerId     String?               @map("stripe_customer_id")
+  stripeSubscriptionId String?               @map("stripe_subscription_id")
+  currentPeriodEnd     DateTime?             @map("current_period_end")
+  cancelAtPeriodEnd    Boolean               @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+model AdminAuditLog {
+  id           String   @id @default(uuid())
+  adminId      String   @map("admin_id")
+  admin        User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String   @map("resource_id")
+  payload      Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@index([resourceType])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }

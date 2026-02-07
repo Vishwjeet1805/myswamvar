@@ -7,7 +7,7 @@ import { logout } from '@/lib/api';
 
 export default function Home() {
   const router = useRouter();
-  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; role?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,6 +86,20 @@ export default function Home() {
             >
               My profile
             </Link>
+            <Link
+              href="/subscription"
+              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              Premium
+            </Link>
+            {user.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100"
+              >
+                Admin
+              </Link>
+            )}
             <button
               type="button"
               onClick={handleLogout}

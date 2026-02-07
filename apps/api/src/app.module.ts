@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -12,6 +13,7 @@ import { RedisModule } from './redis/redis.module';
 import { SavedSearchModule } from './saved-search/saved-search.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { StorageModule } from './storage/storage.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -31,12 +33,15 @@ import { StorageModule } from './storage/storage.module';
       },
     ]),
     AuthModule,
+    AdminModule,
     ProfileModule,
     HoroscopeModule,
     ShortlistModule,
     InterestModule,
     SavedSearchModule,
     ChatModule,
+    SubscriptionModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],

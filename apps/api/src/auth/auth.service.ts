@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
+import { ROLES } from '@matrimony/shared';
 import { randomUUID } from 'crypto';
 import type {
   AuthTokensResponse,
@@ -31,6 +32,7 @@ function toUserResponse(user: User): UserResponse {
     email: user.email,
     phone: user.phone,
     role: user.role,
+    status: user.status,
     emailVerified: user.emailVerified,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
@@ -82,6 +84,15 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new UnauthorizedException('Invalid email or password.');
+    }
+
+    // Only approved users or admins can log in; rejected/pending cannot
+    const isAdmin = user.role === ROLES.ADMIN;
+    if (!isAdmin && user.status === 'rejected') {
+      throw new UnauthorizedException('Account has been rejected. Contact support.');
+    }
+    if (!isAdmin && user.status === 'pending') {
+      throw new UnauthorizedException('Account is pending approval.');
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
@@ -156,7 +167,11 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
-    return user ? toUserResponse(user) : null;
+    if (!user) return null;
+    // Non-admin users must be approved to use the app
+    const isAdmin = user.role === ROLES.ADMIN;
+    if (!isAdmin && user.status !== 'approved') return null;
+    return toUserResponse(user);
   }
 
   private async issueTokenPair(user: User): Promise<AuthTokensResponse> {

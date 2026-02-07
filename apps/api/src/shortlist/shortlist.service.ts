@@ -57,9 +57,10 @@ export class ShortlistService {
       },
     });
 
+    const isPremium = await this.profileService.isPremiumUser(userId);
     const publicProfile = this.profileService.toPublicProfile(
       shortlist.profile as Parameters<ProfileService['toPublicProfile']>[0],
-      { userId, isPremium: this.profileService.isPremiumUser(userId) },
+      { userId, isPremium },
     );
     return {
       id: shortlist.id,
@@ -83,7 +84,8 @@ export class ShortlistService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const viewer = { userId, isPremium: this.profileService.isPremiumUser(userId) };
+    const isPremium = await this.profileService.isPremiumUser(userId);
+    const viewer = { userId, isPremium };
     return items.map((item) => ({
       id: item.id,
       profileId: item.profileId,
