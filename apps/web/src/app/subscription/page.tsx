@@ -10,6 +10,10 @@ import {
   type Plan,
   type SubscriptionMe,
 } from '@/lib/api';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function SubscriptionPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -91,103 +95,100 @@ export default function SubscriptionPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-stone-50">
-        <p className="text-stone-500">Loading subscription plans…</p>
-      </main>
+      <div className="py-8">
+        <PageContainer className="max-w-3xl">
+          <p className="text-center text-muted-foreground">Loading subscription plans…</p>
+        </PageContainer>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen p-8 bg-stone-50">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-stone-900">Premium Membership</h1>
-          <Link
-            href="/"
-            className="text-sm font-medium text-amber-600 hover:text-amber-700"
-          >
-            ← Home
-          </Link>
-        </div>
+    <div className="py-8">
+      <PageContainer className="max-w-3xl">
+        <h1 className="mb-6 text-2xl font-semibold text-foreground">Premium Membership</h1>
 
         {error && (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
-            {error}
-          </div>
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {!token && (
-          <div className="mb-6 rounded-lg border border-stone-200 bg-white p-4 text-sm">
-            <p className="text-stone-600">
-              Log in to manage your premium subscription.
-            </p>
-            <Link
-              href="/login"
-              className="mt-3 inline-block text-sm font-medium text-amber-600 hover:text-amber-700"
-            >
-              Go to login
-            </Link>
-          </div>
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground">
+                Log in to manage your premium subscription.
+              </p>
+              <Button variant="link" size="sm" className="mt-3 px-0" asChild>
+                <Link href="/login">Go to login</Link>
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {me?.subscription && (
-          <div className="mb-6 rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-stone-900">Your plan</h2>
-            <p className="mt-1 text-sm text-stone-600">
-              {me.subscription.plan.name} · {formatPrice(me.subscription.plan)} /{' '}
-              {me.subscription.plan.interval}
-            </p>
-            <p className="mt-2 text-xs text-stone-500">
-              Status: {me.subscription.status}
-              {me.subscription.currentPeriodEnd && (
-                <> · Renews on {new Date(me.subscription.currentPeriodEnd).toLocaleDateString()}</>
-              )}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
+          <Card className="mb-6">
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-card-foreground">Your plan</h2>
+              <p className="text-sm text-muted-foreground">
+                {me.subscription.plan.name} · {formatPrice(me.subscription.plan)} /{' '}
+                {me.subscription.plan.interval}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Status: {me.subscription.status}
+                {me.subscription.currentPeriodEnd && (
+                  <> · Renews on {new Date(me.subscription.currentPeriodEnd).toLocaleDateString()}</>
+                )}
+              </p>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-3 pt-0">
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleCancel}
                 disabled={actionLoading}
-                className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-60"
               >
                 {me.subscription.cancelAtPeriodEnd ? 'Cancel scheduled' : 'Cancel subscription'}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => me.subscription && handleCheckout(me.subscription.plan.id)}
                 disabled={actionLoading}
-                className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-60"
               >
                 Upgrade or renew
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
           {plans.map((plan) => (
-            <div key={plan.id} className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-stone-900">{plan.name}</h3>
-              <p className="mt-1 text-sm text-stone-600">
-                {formatPrice(plan)} / {plan.interval}
-              </p>
-              <ul className="mt-3 text-xs text-stone-500 space-y-1">
-                <li>Unlimited chat</li>
-                <li>Contact access</li>
-                <li>Advanced filters</li>
-              </ul>
-              <button
-                type="button"
-                onClick={() => handleCheckout(plan.id)}
-                disabled={actionLoading}
-                className="mt-4 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-60"
-              >
-                Choose plan
-              </button>
-            </div>
+            <Card key={plan.id}>
+              <CardHeader>
+                <h3 className="text-lg font-semibold text-card-foreground">{plan.name}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {formatPrice(plan)} / {plan.interval}
+                </p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>Unlimited chat</li>
+                  <li>Contact access</li>
+                  <li>Advanced filters</li>
+                </ul>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <Button
+                  size="sm"
+                  onClick={() => handleCheckout(plan.id)}
+                  disabled={actionLoading}
+                >
+                  Choose plan
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
-      </div>
-    </main>
+      </PageContainer>
+    </div>
   );
 }

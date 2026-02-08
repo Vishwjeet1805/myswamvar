@@ -1,3 +1,10 @@
+import * as path from 'path';
+import { config } from 'dotenv';
+
+// Load .env from cwd (repo root when run via "npm run dev:api") or apps/api
+config({ path: path.resolve(process.cwd(), '.env') });
+config({ path: path.resolve(process.cwd(), '../../.env') });
+
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';

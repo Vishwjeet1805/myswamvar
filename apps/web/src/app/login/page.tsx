@@ -4,6 +4,12 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { login } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function LoginForm() {
   const router = useRouter();
@@ -26,9 +32,7 @@ function LoginForm() {
         localStorage.setItem('user', JSON.stringify(data.user));
       }
       const target =
-        redirectTo.startsWith('/') && !redirectTo.startsWith('//')
-          ? redirectTo
-          : '/';
+        redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/';
       router.push(target);
       router.refresh();
     } catch (err) {
@@ -39,80 +43,71 @@ function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-xl border border-stone-200 bg-white p-8 shadow-sm">
-      <h1 className="text-2xl font-semibold text-stone-900">Log in</h1>
-      <p className="mt-1 text-sm text-stone-500">
-        Sign in to your Matrimony account.
-      </p>
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        {error && (
-          <div
-            className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
-            role="alert"
-          >
-            {error}
+    <Card className="w-full max-w-sm shadow-md">
+      <CardHeader>
+        <CardTitle className="text-2xl">Log in</CardTitle>
+        <CardDescription>Sign in to your Matrimony account.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="warning" role="alert">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
-        )}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-stone-700">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-stone-700">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {loading ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
-      <p className="mt-6 text-center text-sm text-stone-600">
-        Don&apos;t have an account?{' '}
-        <Link href="/register" className="font-medium text-amber-600 hover:text-amber-700">
-          Sign up
-        </Link>
-      </p>
-    </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Signing in…' : 'Sign in'}
+          </Button>
+        </form>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{' '}
+          <Link href="/register" className="font-medium text-primary hover:underline">
+            Sign up
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-stone-50">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-muted/40 to-background p-8">
       <Suspense
         fallback={
-          <div className="w-full max-w-sm rounded-xl border border-stone-200 bg-white p-8 shadow-sm animate-pulse">
-            <div className="h-8 w-32 bg-stone-200 rounded" />
-            <div className="mt-2 h-4 w-48 bg-stone-100 rounded" />
-            <div className="mt-6 space-y-4">
-              <div className="h-10 bg-stone-100 rounded" />
-              <div className="h-10 bg-stone-100 rounded" />
-              <div className="h-10 bg-stone-200 rounded" />
-            </div>
-          </div>
+          <Card className="w-full max-w-sm shadow-md">
+            <CardHeader>
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="mt-2 h-4 w-48" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
         }
       >
         <LoginForm />

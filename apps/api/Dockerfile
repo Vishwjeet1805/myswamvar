@@ -17,7 +17,7 @@ COPY apps/api apps/api
 RUN npm run build -w @matrimony/shared
 # Build API: use WORKDIR so nest build outputs to ./dist under apps/api
 WORKDIR /app/apps/api
-RUN npx prisma generate && npx nest build
+RUN npx prisma generate && npx nest build && npx tsc -p prisma/tsconfig.json
 # Copy dist to a known path (nest may still write to /app/dist in some setups)
 WORKDIR /app
 RUN MAIN="$(find /app -name main.js -type f 2>/dev/null | head -1)" && \

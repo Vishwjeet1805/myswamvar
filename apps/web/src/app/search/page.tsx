@@ -1,15 +1,29 @@
 'use client';
 
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import {
   searchProfiles,
   createSavedSearch,
-  type PublicProfile,
   type SearchParams as SearchParamsType,
   type SearchResult,
 } from '@/lib/api';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { ProfileCard } from '@/components/ProfileCard';
+import { SearchGridSkeleton } from '@/components/SearchGridSkeleton';
+import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 12;
@@ -86,149 +100,157 @@ function SearchPageContent() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 p-6">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-stone-900">Search profiles</h1>
-          <Link href="/" className="text-sm font-medium text-amber-600 hover:text-amber-700">
-            ← Home
-          </Link>
-        </div>
+    <div className="py-6">
+      <PageContainer>
+        <h1 className="mb-6 text-2xl font-semibold text-foreground">Search profiles</h1>
 
-        <div className="mb-6 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-medium text-stone-700">Filters</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            <div>
-              <label className="block text-xs text-stone-500">Age min</label>
-              <input
-                type="number"
-                min={18}
-                max={100}
-                value={filters.ageMin ?? ''}
-                onChange={(e) => updateFilters({ ageMin: e.target.value ? Number(e.target.value) : undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500">Age max</label>
-              <input
-                type="number"
-                min={18}
-                max={100}
-                value={filters.ageMax ?? ''}
-                onChange={(e) => updateFilters({ ageMax: e.target.value ? Number(e.target.value) : undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500">Gender</label>
-              <select
-                value={filters.gender ?? ''}
-                onChange={(e) => updateFilters({ gender: (e.target.value || undefined) as 'male' | 'female' | 'other' | undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              >
-                <option value="">Any</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500">Country</label>
-              <input
-                type="text"
-                value={filters.locationCountry ?? ''}
-                onChange={(e) => updateFilters({ locationCountry: e.target.value || undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500">Education</label>
-              <input
-                type="text"
-                value={filters.education ?? ''}
-                onChange={(e) => updateFilters({ education: e.target.value || undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500">Occupation</label>
-              <input
-                type="text"
-                value={filters.occupation ?? ''}
-                onChange={(e) => updateFilters({ occupation: e.target.value || undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500">Religion</label>
-              <input
-                type="text"
-                value={filters.religion ?? ''}
-                onChange={(e) => updateFilters({ religion: e.target.value || undefined })}
-                className="mt-0.5 w-full rounded border border-stone-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => runSearch()}
-              className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
-            >
-              Search
-            </button>
-            {hasToken && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setSaveOpen((o) => !o)}
-                  className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <h2 className="text-sm font-medium text-foreground">Filters</h2>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Age min</Label>
+                <Input
+                  type="number"
+                  min={18}
+                  max={100}
+                  value={filters.ageMin ?? ''}
+                  onChange={(e) =>
+                    updateFilters({ ageMin: e.target.value ? Number(e.target.value) : undefined })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Age max</Label>
+                <Input
+                  type="number"
+                  min={18}
+                  max={100}
+                  value={filters.ageMax ?? ''}
+                  onChange={(e) =>
+                    updateFilters({ ageMax: e.target.value ? Number(e.target.value) : undefined })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Gender</Label>
+                <Select
+                  value={filters.gender ?? '_any'}
+                  onValueChange={(v) =>
+                    updateFilters({
+                      gender: v === '_any' ? undefined : (v as 'male' | 'female' | 'other'),
+                    })
+                  }
                 >
-                  Save this search
-                </button>
-                {saveOpen && (
-                  <div className="flex flex-wrap items-center gap-2 rounded border border-stone-200 bg-stone-50 p-2">
-                    <input
-                      type="text"
-                      placeholder="Search name"
-                      value={saveName}
-                      onChange={(e) => setSaveName(e.target.value)}
-                      className="rounded border border-stone-300 px-2 py-1.5 text-sm"
-                    />
-                    <label className="flex items-center gap-1 text-sm text-stone-600">
-                      <input
-                        type="checkbox"
-                        checked={saveNotify}
-                        onChange={(e) => setSaveNotify(e.target.checked)}
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_any">Any</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Country</Label>
+                <Input
+                  value={filters.locationCountry ?? ''}
+                  onChange={(e) =>
+                    updateFilters({ locationCountry: e.target.value || undefined })
+                  }
+                  placeholder="Any"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Education</Label>
+                <Input
+                  value={filters.education ?? ''}
+                  onChange={(e) => updateFilters({ education: e.target.value || undefined })}
+                  placeholder="Any"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Occupation</Label>
+                <Input
+                  value={filters.occupation ?? ''}
+                  onChange={(e) => updateFilters({ occupation: e.target.value || undefined })}
+                  placeholder="Any"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Religion</Label>
+                <Input
+                  value={filters.religion ?? ''}
+                  onChange={(e) => updateFilters({ religion: e.target.value || undefined })}
+                  placeholder="Any"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button onClick={() => runSearch()}>Search</Button>
+              {hasToken && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSaveOpen((o) => !o)}
+                  >
+                    Save this search
+                  </Button>
+                  {saveOpen && (
+                    <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/50 p-3">
+                      <Input
+                        placeholder="Search name"
+                        value={saveName}
+                        onChange={(e) => setSaveName(e.target.value)}
+                        className="max-w-[180px]"
                       />
-                      Notify on new matches
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleSaveSearch}
-                      disabled={saving || !saveName.trim()}
-                      className="rounded bg-amber-600 px-2 py-1 text-sm text-white hover:bg-amber-700 disabled:opacity-50"
-                    >
-                      {saving ? 'Saving…' : 'Save'}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+                      <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={saveNotify}
+                          onChange={(e) => setSaveNotify(e.target.checked)}
+                          className="rounded border-input"
+                        />
+                        Notify on new matches
+                      </label>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveSearch}
+                        disabled={saving || !saveName.trim()}
+                      >
+                        {saving ? 'Saving…' : 'Save'}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {loading ? (
-          <p className="py-8 text-center text-stone-500">Loading…</p>
+          <SearchGridSkeleton />
         ) : !result ? (
-          <p className="py-8 text-center text-stone-600">Search failed or no results.</p>
+          <Alert variant="destructive">
+            <AlertDescription>Search failed or no results. Try adjusting your filters.</AlertDescription>
+          </Alert>
         ) : result.data.length === 0 ? (
-          <p className="py-8 text-center text-stone-600">No profiles match your filters.</p>
+          <EmptyState
+            title="No profiles match your filters"
+            description="Try broadening your search criteria."
+            actionLabel="Clear and search again"
+            actionHref="/search"
+          />
         ) : (
           <>
-            <p className="mb-4 text-sm text-stone-600">
-              {result.total} result{result.total !== 1 ? 's' : ''} (page {result.page} of {result.totalPages})
+            <p className="mb-4 text-sm text-muted-foreground">
+              {result.total} result{result.total !== 1 ? 's' : ''} (page {result.page} of{' '}
+              {result.totalPages})
             </p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {result.data.map((profile) => (
@@ -236,86 +258,48 @@ function SearchPageContent() {
               ))}
             </div>
             {result.totalPages > 1 && (
-              <div className="mt-6 flex justify-center gap-2">
-                <button
-                  type="button"
+              <div className="mt-6 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
                   disabled={result.page <= 1}
                   onClick={() => goToPage(result.page - 1)}
-                  className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm disabled:opacity-50"
                 >
                   Previous
-                </button>
-                <span className="flex items-center px-2 text-sm text-stone-600">
+                </Button>
+                <span className="text-sm text-muted-foreground">
                   {result.page} / {result.totalPages}
                 </span>
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
+                  size="sm"
                   disabled={result.page >= result.totalPages}
                   onClick={() => goToPage(result.page + 1)}
-                  className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm disabled:opacity-50"
                 >
                   Next
-                </button>
+                </Button>
               </div>
             )}
           </>
         )}
-      </div>
-    </main>
+      </PageContainer>
+    </div>
   );
 }
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-stone-50 p-6">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-stone-900">Search profiles</h1>
-            <Link href="/" className="text-sm font-medium text-amber-600 hover:text-amber-700">
-              ← Home
-            </Link>
-          </div>
-          <p className="py-8 text-center text-stone-500">Loading…</p>
+    <Suspense
+      fallback={
+        <div className="py-6">
+          <PageContainer>
+            <h1 className="mb-6 text-2xl font-semibold text-foreground">Search profiles</h1>
+            <SearchGridSkeleton />
+          </PageContainer>
         </div>
-      </main>
-    }>
+      }
+    >
       <SearchPageContent />
     </Suspense>
-  );
-}
-
-function ProfileCard({ profile }: { profile: PublicProfile }) {
-  const primaryPhoto = profile.photos.find((p) => p.isPrimary) ?? profile.photos[0];
-  const locationStr = profile.location
-    ? [profile.location.city, profile.location.state, profile.location.country].filter(Boolean).join(', ')
-    : '';
-  return (
-    <Link
-      href={`/profile/${profile.id}`}
-      className="block rounded-xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md"
-    >
-      <div className="aspect-[4/3] overflow-hidden rounded-t-xl bg-stone-100">
-        {primaryPhoto ? (
-          <img src={primaryPhoto.url} alt={profile.displayName} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-stone-400">No photo</div>
-        )}
-      </div>
-      <div className="p-3">
-        <h3 className="font-medium text-stone-900">{profile.displayName}</h3>
-        <p className="mt-0.5 text-xs text-stone-500">
-          {profile.gender} · {profile.dob}
-          {locationStr && ` · ${locationStr}`}
-        </p>
-        {(profile.education || profile.occupation) && (
-          <p className="mt-1 truncate text-xs text-stone-600">
-            {profile.education}
-            {profile.education && profile.occupation ? ' · ' : ''}
-            {profile.occupation}
-          </p>
-        )}
-      </div>
-    </Link>
   );
 }

@@ -13,14 +13,17 @@ import {
   type PublicProfile,
   type HoroscopeMatch,
 } from '@/lib/api';
-
+import { PageContainer } from '@/components/layout/PageContainer';
+import { ProfileDetailSkeleton } from '@/components/ProfileDetailSkeleton';
+import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function PublicProfilePage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
-  const [profile, setProfile] = useState<PublicProfile | null | undefined>(
-    undefined,
-  );
+  const [profile, setProfile] = useState<PublicProfile | null | undefined>(undefined);
   const [isOwn, setIsOwn] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -29,15 +32,14 @@ export default function PublicProfilePage() {
   const [shortlisted, setShortlisted] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [hasToken, setHasToken] = useState(false);
-  const [horoscopeMatch, setHoroscopeMatch] = useState<HoroscopeMatch | null | undefined>(
-    undefined,
-  );
+  const [horoscopeMatch, setHoroscopeMatch] = useState<
+    HoroscopeMatch | null | undefined
+  >(undefined);
   const [loadingHoroscope, setLoadingHoroscope] = useState(false);
 
   const [contact, setContact] = useState<PublicProfile['contact'] | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
-
 
   const loadProfile = useCallback(async () => {
     if (!id) {
@@ -47,20 +49,15 @@ export default function PublicProfilePage() {
     }
     try {
       const token =
-        typeof window !== 'undefined'
-          ? localStorage.getItem('accessToken')
-          : null;
+        typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
       setHasToken(!!token);
       const [p, myProfile] = await Promise.all([
         getProfileById(id, token ?? undefined),
         token ? getMyProfile(token).catch(() => null) : Promise.resolve(null),
       ]);
       setProfile(p);
-
       setIsOwn(!!(myProfile && myProfile.id === id));
-
       setContact(p.contact ?? null);
-
     } catch {
       setProfile(null);
     } finally {
@@ -73,9 +70,7 @@ export default function PublicProfilePage() {
     setContactLoading(true);
     try {
       const token =
-        typeof window !== 'undefined'
-          ? localStorage.getItem('accessToken')
-          : null;
+        typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
       if (!token) {
         setContactError('Log in to view contact details.');
         return;
@@ -83,7 +78,9 @@ export default function PublicProfilePage() {
       const info = await getProfileContact(id, token);
       setContact(info);
     } catch (err) {
-      setContactError(err instanceof Error ? err.message : 'Unable to load contact.');
+      setContactError(
+        err instanceof Error ? err.message : 'Unable to load contact.'
+      );
     } finally {
       setContactLoading(false);
     }
@@ -102,9 +99,7 @@ export default function PublicProfilePage() {
       setLoadingHoroscope(true);
       try {
         const token =
-          typeof window !== 'undefined'
-            ? localStorage.getItem('accessToken')
-            : null;
+          typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
         if (!token) {
           setHoroscopeMatch(null);
           return;
@@ -152,182 +147,186 @@ export default function PublicProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-stone-50">
-        <p className="text-stone-500">Loading profile…</p>
-      </main>
+      <div className="py-8">
+        <PageContainer>
+          <ProfileDetailSkeleton />
+        </PageContainer>
+      </div>
     );
   }
 
   if (!profile) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8 bg-stone-50">
-        <p className="text-stone-600">Profile not found.</p>
-        <Link
-          href="/"
-          className="mt-4 text-sm font-medium text-amber-600 hover:text-amber-700"
-        >
-          ← Home
-        </Link>
-      </main>
+      <div className="py-8">
+        <PageContainer>
+          <EmptyState
+            title="Profile not found"
+            description="The profile you're looking for doesn't exist or was removed."
+            actionLabel="Go to search"
+            actionHref="/search"
+          />
+        </PageContainer>
+      </div>
     );
   }
 
+  const locationStr =
+    profile.location &&
+    (profile.location.city || profile.location.state || profile.location.country)
+      ? [profile.location.city, profile.location.state, profile.location.country]
+          .filter(Boolean)
+          .join(', ')
+      : '';
+
   return (
-    <main className="min-h-screen p-8 bg-stone-50">
-      <div className="mx-auto max-w-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-stone-900">Profile</h1>
-          <div className="flex gap-2">
-            {hasToken && !isOwn && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleShortlist}
-                  disabled={shortlistSending || shortlisted}
-                  className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
-                >
-                  {shortlisted ? 'Shortlisted' : shortlistSending ? 'Adding…' : 'Add to shortlist'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSendInterest}
-                  disabled={interestSending || interestSent}
-                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
-                >
-                  {interestSent ? 'Interest sent' : interestSending ? 'Sending…' : 'Send interest'}
-                </button>
-              </>
-            )}
-            <Link
-              href="/"
-              className="text-sm font-medium text-amber-600 hover:text-amber-700"
-            >
-              ← Home
-            </Link>
-          </div>
+    <div className="py-8">
+      <PageContainer className="max-w-2xl">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <h1 className="text-2xl font-semibold text-foreground">Profile</h1>
+          {hasToken && !isOwn && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShortlist}
+                disabled={shortlistSending || shortlisted}
+              >
+                {shortlisted ? 'Shortlisted' : shortlistSending ? 'Adding…' : 'Add to shortlist'}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSendInterest}
+                disabled={interestSending || interestSent}
+              >
+                {interestSent ? 'Interest sent' : interestSending ? 'Sending…' : 'Send interest'}
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold text-stone-900">
-            {profile.displayName}
-          </h2>
-          <p className="mt-1 text-sm text-stone-500">
-            {profile.gender} · DOB: {profile.dob}
-            {profile.location &&
-              (profile.location.city ||
-                profile.location.state ||
-                profile.location.country) &&
-              ` · ${[profile.location.city, profile.location.state, profile.location.country].filter(Boolean).join(', ')}`}
-          </p>
-          {(profile.education || profile.occupation) && (
-            <p className="mt-3 text-sm text-stone-600">
-              {profile.education}
-              {profile.education && profile.occupation ? ' · ' : ''}
-              {profile.occupation}
+        <Card>
+          <CardHeader>
+            <h2 className="text-xl font-semibold text-card-foreground">
+              {profile.displayName}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {profile.gender} · DOB: {profile.dob}
+              {locationStr && ` · ${locationStr}`}
             </p>
-          )}
-          {profile.bio && (
-            <p className="mt-2 text-stone-700">{profile.bio}</p>
-          )}
-          <p className="mt-2 text-xs text-stone-500">
-            {profile.profileVerified && 'Verified profile · '}
-            {profile.emailVerified && 'Email verified'}
-          </p>
-
-          {contact && (
-            <div className="mt-4 rounded-lg bg-stone-50 p-3 text-sm">
-              <p className="font-medium text-stone-700">Contact</p>
-              {contact.email && (
-                <p className="text-stone-600">{contact.email}</p>
-              )}
-              {contact.phone && (
-                <p className="text-stone-600">{contact.phone}</p>
-              )}
-            </div>
-          )}
-          {!contact && (
-            <div className="mt-4 rounded-lg border border-stone-200 bg-white p-3 text-sm">
-              <p className="font-medium text-stone-700">Contact</p>
-              <p className="text-stone-500">Contact details are locked.</p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleContact}
-                  disabled={contactLoading}
-                  className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-60"
-                >
-                  {contactLoading ? 'Checking…' : 'View contact'}
-                </button>
-                <Link
-                  href="/subscription"
-                  className="text-xs font-medium text-amber-700 hover:text-amber-800"
-                >
-                  Upgrade to premium
-                </Link>
+            {(profile.education || profile.occupation) && (
+              <p className="text-sm text-foreground/90">
+                {profile.education}
+                {profile.education && profile.occupation ? ' · ' : ''}
+                {profile.occupation}
+              </p>
+            )}
+            {profile.bio && (
+              <p className="mt-2 text-sm text-card-foreground">{profile.bio}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {profile.profileVerified && 'Verified profile · '}
+              {profile.emailVerified && 'Email verified'}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6 pt-0">
+            {contact && (
+              <div className="rounded-lg bg-muted/50 p-4">
+                <p className="font-medium text-foreground">Contact</p>
+                {contact.email && (
+                  <p className="text-sm text-muted-foreground">{contact.email}</p>
+                )}
+                {contact.phone && (
+                  <p className="text-sm text-muted-foreground">{contact.phone}</p>
+                )}
               </div>
-              {contactError && (
-                <p className="mt-2 text-xs text-rose-600">{contactError}</p>
-              )}
-            </div>
-          )}
-
-          {horoscopeMatch !== undefined && (
-            <div className="mt-6 border-t border-stone-200 pt-6">
-              <h3 className="text-sm font-medium text-stone-700 mb-3">Horoscope Match</h3>
-              {loadingHoroscope ? (
-                <p className="text-sm text-stone-500">Loading match...</p>
-              ) : horoscopeMatch ? (
-                <div className="rounded-lg bg-amber-50 p-4 border border-amber-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-semibold text-amber-900">
-                      {horoscopeMatch.matchPercent}% Match
-                    </span>
-                  </div>
-                  <p className="text-sm text-amber-800 mb-3">
-                    {horoscopeMatch.doshaResult.summary}
-                  </p>
-                  <div className="text-xs text-amber-700 space-y-1">
-                    {horoscopeMatch.doshaResult.mangalDosha && (
-                      <p>• Mangal Dosha present</p>
-                    )}
-                    {horoscopeMatch.doshaResult.nadiDosha && (
-                      <p>• Nadi Dosha present</p>
-                    )}
-                    {horoscopeMatch.doshaResult.bhakootDosha && (
-                      <p>• Bhakoot Dosha present</p>
-                    )}
-                    {!horoscopeMatch.doshaResult.mangalDosha &&
-                      !horoscopeMatch.doshaResult.nadiDosha &&
-                      !horoscopeMatch.doshaResult.bhakootDosha && (
-                        <p>• No doshas found</p>
-                      )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-stone-500">
-                  Horoscope match not available. Both profiles need complete birth details.
+            )}
+            {!contact && (
+              <div className="rounded-lg border bg-card p-4">
+                <p className="font-medium text-foreground">Contact</p>
+                <p className="text-sm text-muted-foreground">
+                  Contact details are locked.
                 </p>
-              )}
-            </div>
-          )}
-
-          {profile.photos.length > 0 && (
-            <div className="mt-6 border-t border-stone-200 pt-6">
-              <h3 className="text-sm font-medium text-stone-700">Photos</h3>
-              <div className="mt-2 flex flex-wrap gap-3">
-                {profile.photos.map((photo) => (
-                  <img
-                    key={photo.id}
-                    src={photo.url}
-                    alt="Profile"
-                    className="h-32 w-32 rounded-lg object-cover border border-stone-200"
-                  />
-                ))}
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <Button
+                    size="sm"
+                    onClick={handleContact}
+                    disabled={contactLoading}
+                  >
+                    {contactLoading ? 'Checking…' : 'View contact'}
+                  </Button>
+                  <Button variant="link" size="sm" asChild>
+                    <Link href="/subscription">Upgrade to premium</Link>
+                  </Button>
+                </div>
+                {contactError && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>{contactError}</AlertDescription>
+                  </Alert>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </main>
+            )}
+
+            {horoscopeMatch !== undefined && (
+              <div className="border-t pt-6">
+                <h3 className="mb-3 text-sm font-medium text-foreground">
+                  Horoscope Match
+                </h3>
+                {loadingHoroscope ? (
+                  <p className="text-sm text-muted-foreground">Loading match…</p>
+                ) : horoscopeMatch ? (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-lg font-semibold text-primary">
+                        {horoscopeMatch.matchPercent}% Match
+                      </span>
+                    </div>
+                    <p className="mb-3 text-sm text-foreground/90">
+                      {horoscopeMatch.doshaResult.summary}
+                    </p>
+                    <div className="space-y-1 text-xs text-muted-foreground">
+                      {horoscopeMatch.doshaResult.mangalDosha && (
+                        <p>• Mangal Dosha present</p>
+                      )}
+                      {horoscopeMatch.doshaResult.nadiDosha && (
+                        <p>• Nadi Dosha present</p>
+                      )}
+                      {horoscopeMatch.doshaResult.bhakootDosha && (
+                        <p>• Bhakoot Dosha present</p>
+                      )}
+                      {!horoscopeMatch.doshaResult.mangalDosha &&
+                        !horoscopeMatch.doshaResult.nadiDosha &&
+                        !horoscopeMatch.doshaResult.bhakootDosha && (
+                          <p>• No doshas found</p>
+                        )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Horoscope match not available. Both profiles need complete
+                    birth details.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {profile.photos.length > 0 && (
+              <div className="border-t pt-6">
+                <h3 className="mb-2 text-sm font-medium text-foreground">Photos</h3>
+                <div className="flex flex-wrap gap-3">
+                  {profile.photos.map((photo) => (
+                    <img
+                      key={photo.id}
+                      src={photo.url}
+                      alt="Profile"
+                      className="h-32 w-32 rounded-lg border object-cover"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </PageContainer>
+    </div>
   );
 }

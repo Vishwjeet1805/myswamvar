@@ -10,7 +10,10 @@
     "dev:web": "npm run dev -w @matrimony/web",
     "build": "npm run build -w @matrimony/shared && npm run build -w @matrimony/api && npm run build -w @matrimony/web",
     "build:api": "npm run build -w @matrimony/shared && npm run build -w @matrimony/api",
-    "build:web": "npm run build -w @matrimony/shared && npm run build -w @matrimony/web"
+    "build:web": "npm run build -w @matrimony/shared && npm run build -w @matrimony/web",
+    "db:seed": "npm run db:seed -w @matrimony/api",
+    "db:seed:cleanup": "npm run db:seed:cleanup -w @matrimony/api",
+    "db:seed:reset": "npm run db:seed:reset -w @matrimony/api"
   },
   "engines": {
     "node": ">=20"

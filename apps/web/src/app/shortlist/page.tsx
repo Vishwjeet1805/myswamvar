@@ -8,6 +8,12 @@ import {
   removeFromShortlist,
   type ShortlistItem,
 } from '@/lib/api';
+import { PageContainer } from '@/components/layout/PageContainer';
+import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function ShortlistPage() {
   const router = useRouter();
@@ -52,95 +58,98 @@ export default function ShortlistPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 p-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-stone-900">Shortlist</h1>
-          <div className="flex gap-2">
-            <Link
-              href="/search"
-              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-            >
-              Search
-            </Link>
-            <Link href="/" className="text-sm font-medium text-amber-600 hover:text-amber-700">
-              ← Home
-            </Link>
-          </div>
-        </div>
+    <div className="py-6">
+      <PageContainer className="max-w-4xl">
+        <h1 className="mb-6 text-2xl font-semibold text-foreground">Shortlist</h1>
 
         {loading ? (
-          <p className="py-8 text-center text-stone-500">Loading…</p>
-        ) : error ? (
-          <p className="py-8 text-center text-red-600">{error}</p>
-        ) : items.length === 0 ? (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-            <p className="text-stone-600">Your shortlist is empty.</p>
-            <Link
-              href="/search"
-              className="mt-3 inline-block text-sm font-medium text-amber-600 hover:text-amber-700"
-            >
-              Search profiles to shortlist
-            </Link>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i}>
+                <CardContent className="flex gap-4 p-4">
+                  <Skeleton className="h-24 w-24 shrink-0 rounded-lg" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+        ) : error ? (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : items.length === 0 ? (
+          <EmptyState
+            title="Your shortlist is empty"
+            description="Search for profiles and add them to your shortlist."
+            actionLabel="Search profiles"
+            actionHref="/search"
+          />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
-              >
-                <Link href={`/profile/${item.profile.id}`} className="shrink-0">
-                  {item.profile.photos.find((p) => p.isPrimary) ? (
-                    <img
-                      src={item.profile.photos.find((p) => p.isPrimary)!.url}
-                      alt={item.profile.displayName}
-                      className="h-24 w-24 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-stone-100 text-stone-400 text-xs">
-                      No photo
-                    </div>
-                  )}
-                </Link>
-                <div className="min-w-0 flex-1">
+              <Card key={item.id} className="overflow-hidden">
+                <CardContent className="flex gap-4 p-4">
                   <Link
                     href={`/profile/${item.profile.id}`}
-                    className="font-medium text-stone-900 hover:underline"
+                    className="shrink-0"
                   >
-                    {item.profile.displayName}
+                    {item.profile.photos.find((p) => p.isPrimary) ? (
+                      <img
+                        src={item.profile.photos.find((p) => p.isPrimary)!.url}
+                        alt={item.profile.displayName}
+                        className="h-24 w-24 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-muted text-muted-foreground text-xs">
+                        No photo
+                      </div>
+                    )}
                   </Link>
-                  <p className="mt-0.5 text-xs text-stone-500">
-                    {item.profile.gender} · {item.profile.dob}
-                  </p>
-                  {(item.profile.education || item.profile.occupation) && (
-                    <p className="mt-1 truncate text-xs text-stone-600">
-                      {item.profile.education}
-                      {item.profile.education && item.profile.occupation ? ' · ' : ''}
-                      {item.profile.occupation}
-                    </p>
-                  )}
-                  <div className="mt-2 flex gap-2">
+                  <div className="min-w-0 flex-1">
                     <Link
                       href={`/profile/${item.profile.id}`}
-                      className="text-sm font-medium text-amber-600 hover:text-amber-700"
+                      className="font-medium text-foreground hover:underline"
                     >
-                      View profile
+                      {item.profile.displayName}
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(item.profileId)}
-                      className="text-sm text-stone-500 hover:text-red-600"
-                    >
-                      Remove
-                    </button>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {item.profile.gender} · {item.profile.dob}
+                    </p>
+                    {(item.profile.education || item.profile.occupation) && (
+                      <p className="mt-1 truncate text-xs text-foreground/80">
+                        {item.profile.education}
+                        {item.profile.education && item.profile.occupation
+                          ? ' · '
+                          : ''}
+                        {item.profile.occupation}
+                      </p>
+                    )}
+                    <div className="mt-2 flex gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/profile/${item.profile.id}`}>
+                          View profile
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleRemove(item.profileId)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
-      </div>
-    </main>
+      </PageContainer>
+    </div>
   );
 }

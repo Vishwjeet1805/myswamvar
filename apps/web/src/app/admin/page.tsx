@@ -36,11 +36,11 @@ export default function AdminDashboardPage() {
   }, [load]);
 
   if (loading) {
-    return <p className="text-stone-500">Loading analytics…</p>;
+    return <p className="text-muted-foreground">Loading analytics…</p>;
   }
   if (error) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive">
         {error}
       </div>
     );
@@ -60,26 +60,26 @@ export default function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-stone-900">Admin Dashboard</h1>
-      <p className="mt-1 text-stone-500">Overview and quick links</p>
+      <h1 className="text-2xl font-semibold text-foreground">Admin Dashboard</h1>
+      <p className="mt-1 text-muted-foreground">Overview and quick links</p>
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) =>
           c.href ? (
             <Link
               key={c.label}
               href={c.href}
-              className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm transition hover:border-amber-200 hover:shadow"
+              className="rounded-xl border bg-card p-5 shadow-sm transition hover:border-primary/30 hover:shadow-md"
             >
-              <p className="text-sm font-medium text-stone-500">{c.label}</p>
-              <p className="mt-1 text-2xl font-semibold text-stone-900">{c.value}</p>
+              <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
+              <p className="mt-1 text-2xl font-semibold text-card-foreground">{c.value}</p>
             </Link>
           ) : (
             <div
               key={c.label}
-              className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm"
+              className="rounded-xl border bg-card p-5 shadow-sm"
             >
-              <p className="text-sm font-medium text-stone-500">{c.label}</p>
-              <p className="mt-1 text-2xl font-semibold text-stone-900">{c.value}</p>
+              <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
+              <p className="mt-1 text-2xl font-semibold text-card-foreground">{c.value}</p>
             </div>
           ),
         )}

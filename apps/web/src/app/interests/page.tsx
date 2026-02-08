@@ -73,34 +73,18 @@ export default function InterestsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 p-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-stone-900">Interests</h1>
-          <div className="flex gap-2">
-            <Link
-              href="/search"
-              className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-            >
-              Search
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-amber-600 hover:text-amber-700"
-            >
-              ← Home
-            </Link>
-          </div>
-        </div>
+    <div className="py-6">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6">
+        <h1 className="mb-6 text-2xl font-semibold text-foreground">Interests</h1>
 
-        <div className="mb-4 flex gap-2 border-b border-stone-200">
+        <div className="mb-4 flex gap-2 border-b">
           <button
             type="button"
             onClick={() => setTab('received')}
-            className={`border-b-2 px-4 py-2 text-sm font-medium ${
+            className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
               tab === 'received'
-                ? 'border-amber-600 text-amber-700'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             Received ({received.length})
@@ -110,8 +94,8 @@ export default function InterestsPage() {
             onClick={() => setTab('sent')}
             className={`border-b-2 px-4 py-2 text-sm font-medium ${
               tab === 'sent'
-                ? 'border-amber-600 text-amber-700'
-                : 'border-transparent text-stone-600 hover:text-stone-900'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             Sent ({sent.length})
@@ -119,12 +103,12 @@ export default function InterestsPage() {
         </div>
 
         {loading ? (
-          <p className="py-8 text-center text-stone-500">Loading…</p>
+          <p className="py-8 text-center text-muted-foreground">Loading…</p>
         ) : error ? (
-          <p className="py-8 text-center text-red-600">{error}</p>
+          <p className="py-8 text-center text-destructive">{error}</p>
         ) : tab === 'received' ? (
           received.length === 0 ? (
-            <div className="rounded-xl border border-stone-200 bg-white p-8 text-center text-stone-600">
+            <div className="rounded-xl border border bg-card p-8 text-center text-muted-foreground">
               No interests received yet.
             </div>
           ) : (
@@ -140,7 +124,7 @@ export default function InterestsPage() {
             </div>
           )
         ) : sent.length === 0 ? (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center text-stone-600">
+          <div className="rounded-xl border border bg-card p-8 text-center text-muted-foreground">
             You have not sent any interests yet.
           </div>
         ) : (
@@ -151,7 +135,7 @@ export default function InterestsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -168,7 +152,7 @@ function InterestReceivedCard({
   if (!profile) return null;
   const primaryPhoto = profile.photos.find((p) => p.isPrimary) ?? profile.photos[0];
   return (
-    <div className="flex gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
+    <div className="flex gap-4 rounded-xl border border bg-card p-4 shadow-sm">
       <Link href={`/profile/${profile.id}`} className="shrink-0">
         {primaryPhoto ? (
           <img
@@ -177,7 +161,7 @@ function InterestReceivedCard({
             className="h-20 w-20 rounded-lg object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-stone-100 text-stone-400 text-xs">
+          <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-muted text-muted-foreground text-xs">
             No photo
           </div>
         )}
@@ -185,15 +169,15 @@ function InterestReceivedCard({
       <div className="min-w-0 flex-1">
         <Link
           href={`/profile/${profile.id}`}
-          className="font-medium text-stone-900 hover:underline"
+          className="font-medium text-foreground hover:underline"
         >
           {profile.displayName}
         </Link>
-        <p className="mt-0.5 text-xs text-stone-500">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {profile.gender} · {profile.dob} · Status: {item.status}
         </p>
         {(profile.education || profile.occupation) && (
-          <p className="mt-1 truncate text-xs text-stone-600">
+          <p className="mt-1 truncate text-xs text-muted-foreground">
             {profile.education}
             {profile.education && profile.occupation ? ' · ' : ''}
             {profile.occupation}
@@ -204,14 +188,14 @@ function InterestReceivedCard({
             <button
               type="button"
               onClick={onAccept}
-              className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
+              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               Accept
             </button>
             <button
               type="button"
               onClick={onDecline}
-              className="rounded border border-stone-300 bg-white px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+              className="rounded border border border-input bg-background px-3 py-1.5 text-sm hover:bg-accent"
             >
               Decline
             </button>
@@ -227,7 +211,7 @@ function InterestSentCard({ item }: { item: InterestItem }) {
   if (!profile) return null;
   const primaryPhoto = profile.photos.find((p) => p.isPrimary) ?? profile.photos[0];
   return (
-    <div className="flex gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
+    <div className="flex gap-4 rounded-xl border border bg-card p-4 shadow-sm">
       <Link href={`/profile/${profile.id}`} className="shrink-0">
         {primaryPhoto ? (
           <img
@@ -236,7 +220,7 @@ function InterestSentCard({ item }: { item: InterestItem }) {
             className="h-20 w-20 rounded-lg object-cover"
           />
         ) : (
-          <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-stone-100 text-stone-400 text-xs">
+          <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-muted text-muted-foreground text-xs">
             No photo
           </div>
         )}
@@ -244,15 +228,15 @@ function InterestSentCard({ item }: { item: InterestItem }) {
       <div className="min-w-0 flex-1">
         <Link
           href={`/profile/${profile.id}`}
-          className="font-medium text-stone-900 hover:underline"
+          className="font-medium text-foreground hover:underline"
         >
           {profile.displayName}
         </Link>
-        <p className="mt-0.5 text-xs text-stone-500">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {profile.gender} · {profile.dob} · Status: {item.status}
         </p>
         {(profile.education || profile.occupation) && (
-          <p className="mt-1 truncate text-xs text-stone-600">
+          <p className="mt-1 truncate text-xs text-muted-foreground">
             {profile.education}
             {profile.education && profile.occupation ? ' · ' : ''}
             {profile.occupation}
@@ -260,7 +244,7 @@ function InterestSentCard({ item }: { item: InterestItem }) {
         )}
         <Link
           href={`/profile/${profile.id}`}
-          className="mt-2 inline-block text-sm font-medium text-amber-600 hover:text-amber-700"
+          className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
         >
           View profile
         </Link>

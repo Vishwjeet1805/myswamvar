@@ -1,0 +1,78 @@
+# Demo Video – TTS Narration Script
+
+Copy each block below into your text-to-speech tool (ElevenLabs, Google Cloud TTS, Amazon Polly, or browser TTS). Use one voice and ~140–160 words per minute. Add 1–2 seconds of silence between blocks when generating audio for easier editing.
+
+---
+SCREEN 1 – Landing page (/)
+---
+This is the matrimony platform home page. Visitors see the main headline and can log in or sign up. After signing in, users get a dashboard with quick access to search, shortlist, messages, interests, profile, and premium.
+
+---
+SCREEN 2 – Registration (/register)
+---
+New users can create an account with email and password. Optionally they can add a phone number. After registration they are logged in and taken to the home dashboard.
+
+---
+SCREEN 3 – Login (/login)
+---
+Returning users sign in here with email and password. The app uses secure tokens for session management.
+
+---
+SCREEN 4 – Home dashboard logged in (/)
+---
+Once logged in, the home dashboard offers six main areas: search for matches, shortlist of saved profiles, messages, sent and received interests, my profile, and premium membership.
+
+---
+SCREEN 5 – Search (/search)
+---
+Search lets users find profiles using filters such as age, gender, location, education, and more. Results appear in a grid with pagination. Users can save a search for later and get notified when new matches appear.
+
+---
+SCREEN 6 – Profile view (/profile/[id])
+---
+Clicking a profile opens the full profile: photos, details, and bio. Users can add the profile to their shortlist or send an interest. The platform supports horoscope matching with match percentage and dosha results. Contact details may be restricted for free users and unlocked with premium.
+
+---
+SCREEN 7 – Shortlist (/shortlist)
+---
+The shortlist holds profiles the user has saved. They can remove profiles at any time. Shortlisted profiles are easy to revisit before sending an interest.
+
+---
+SCREEN 8 – Interests (/interests)
+---
+On the interests page, users see interests they have received and interests they have sent. They can accept or decline received interests. When two users accept each other's interest, they become connected and can chat.
+
+---
+SCREEN 9 – Messages / Chat (/chat and /chat/[userId])
+---
+Messages lists all conversations. Chat is only available after mutual interest. Here we see the one-to-one chat view. Free users may have a limited number of messages; premium unlocks unlimited chat and contact access.
+
+---
+SCREEN 10 – Saved searches (/saved-searches)
+---
+Saved searches appear here. Users can run a saved search again with one click, so they don't have to re-enter filters.
+
+---
+SCREEN 11 – My profile (/profile)
+---
+My profile is where users edit their own information: name, date and place of birth for horoscope, location, education, occupation, and bio. They can upload multiple photos and set a primary photo. Privacy settings control who can see contact details.
+
+---
+SCREEN 12 – Premium / Subscription (/subscription)
+---
+The premium page shows subscription plans, typically monthly and yearly. Premium members get benefits such as unlimited chat, contact access, and advanced search. Payment is handled through a secure checkout flow.
+
+---
+SCREEN 13 – Admin dashboard (/admin)
+---
+Administrators have a separate dashboard with key metrics: total users and profiles, active subscriptions, pending approvals, and recent signups. From here they can manage users, profiles, and subscriptions.
+
+---
+SCREEN 14 – Admin sub-pages (/admin/users, /admin/profiles, /admin/subscriptions)
+---
+Admin can approve or manage users, verify profiles, and view or manage subscriptions. All admin routes are protected by role checks.
+
+---
+SCREEN 15 – Closing (/)
+---
+That wraps up the demo. This matrimony platform covers registration, profiles, search and shortlist, interests and chat, premium membership, and admin oversight—all built with a modern web stack and ready for deployment.
