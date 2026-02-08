@@ -6,6 +6,9 @@ This folder holds the **epic** and **user stories** for the matrimony platform. 
 
 - **EPIC-MATRIMONY.md** – Epic: "Matrimony Platform – Web & API" with summary and high-level acceptance criteria.
 - **stories/** – One markdown file per FRD module (01–08) with title, description, acceptance criteria, and optional technical notes.
+- **setup/** – Jira setup tips and admin guide for releases and defects.
+
+**Confluence**: See `confluence-docs/` in the repo root for Confluence page sources and Jira widget suggestions.
 
 ## How to Use
 
