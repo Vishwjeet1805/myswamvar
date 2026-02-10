@@ -41,7 +41,7 @@ This starts PostgreSQL, Redis, MinIO, the API, and the web app. Default ports:
 
 - Web: 3000
 - API: 3001
-- PostgreSQL: 5432
+- PostgreSQL: 5433
 - Redis: 6379
 - MinIO: 9000
 

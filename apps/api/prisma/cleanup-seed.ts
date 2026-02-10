@@ -32,7 +32,7 @@ async function main(): Promise<void> {
   if (seedUsers.length === 0) {
     console.log('No seed users found. Nothing to clean up.');
   } else {
-    const userIds = seedUsers.map((u) => u.id);
+    const userIds = seedUsers.map((u: { id: string }) => u.id);
     await prisma.profile.deleteMany({ where: { userId: { in: userIds } } });
     const deleted = await prisma.user.deleteMany({
       where: { id: { in: userIds } },

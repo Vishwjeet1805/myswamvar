@@ -134,7 +134,7 @@ async function seedUsersAndProfiles(): Promise<void> {
     const education_ = pick(education);
     const occupation_ = pick(occupation);
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => {
       const user = await tx.user.create({
         data: {
           email,

@@ -9,6 +9,7 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -19,7 +20,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@matrimony/shared": ["../../packages/shared/src"]
+      "@matrimony/shared": ["../../packages/shared/dist"]
     }
   },
   "include": ["src/**/*"],

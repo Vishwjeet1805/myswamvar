@@ -18,11 +18,15 @@ RUN npm run build -w @matrimony/shared
 # Build API: use WORKDIR so nest build outputs to ./dist under apps/api
 WORKDIR /app/apps/api
 RUN npx prisma generate && npx nest build && npx tsc -p prisma/tsconfig.json
-# Copy dist to a known path (nest may still write to /app/dist in some setups)
+# Copy dist to a known path. Nest builds to /app/apps/api/dist when WORKDIR is /app/apps/api.
 WORKDIR /app
-RUN MAIN="$(find /app -name main.js -type f 2>/dev/null | head -1)" && \
-  if [ -z "$MAIN" ]; then echo "main.js not found. Listing /app:" && find /app -type f -name '*.js' 2>/dev/null | head -20 && exit 1; fi && \
-  DIST_DIR="$(dirname "$MAIN")" && mkdir -p /app/api-dist && cp -r "$DIST_DIR"/* /app/api-dist/
+RUN if [ -f /app/apps/api/dist/main.js ]; then \
+  mkdir -p /app/api-dist && cp -r /app/apps/api/dist/* /app/api-dist/; \
+else \
+  echo "main.js not found at /app/apps/api/dist. Listing /app/apps/api/dist:" && \
+  find /app/apps/api -maxdepth 3 -type f -name 'main.js' 2>/dev/null | head -20 && \
+  exit 1; \
+fi
 
 # Production stage (Debian to match Prisma engine from builder)
 FROM node:20-bookworm-slim AS runner

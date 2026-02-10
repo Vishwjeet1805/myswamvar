@@ -17,7 +17,7 @@ docker-compose logs -f
 docker-compose down
 ```
 
-Default ports: Web 3000, API 3001, PostgreSQL 5432, Redis 6379, MinIO 9000. Override with env vars (see `.env.example` and `docker-compose.yml`).
+Default ports: Web 3000, API 3001, PostgreSQL 5433, Redis 6379, MinIO 9000. Override with env vars (see `.env.example` and `docker-compose.yml`).
 
 ## Database migrations
 
