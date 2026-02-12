@@ -16,6 +16,9 @@ This page helps developers get the My Swayamvar project running locally.
 2. **Environment**
    - Copy `.env.example` to `.env`
    - Edit `.env` if needed (defaults point to `localhost` for PostgreSQL and Redis)
+   - If you run behind a domain/reverse-proxy, set:
+     `NEXT_PUBLIC_API_URL=https://your-domain.com/api`
+   - Keep `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` stable across deploys
 
 3. **Database**
    - Ensure PostgreSQL and Redis are running
@@ -35,6 +38,12 @@ From the repo root:
 
 ```bash
 docker-compose up --build
+```
+
+If your host supports the Compose plugin, this equivalent command also works:
+
+```bash
+docker compose up --build
 ```
 
 This starts PostgreSQL, Redis, MinIO, the API, and the web app. Default ports:

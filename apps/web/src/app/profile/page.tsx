@@ -36,6 +36,16 @@ export default function ProfilePage() {
     placeOfBirth: '',
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const resetAuthAndRedirect = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+    }
+    setAccessToken(null);
+    setProfile(undefined);
+    router.replace('/login?redirect=/profile');
+  }, [router]);
 
   const loadProfile = useCallback(async () => {
     const token =
@@ -66,12 +76,17 @@ export default function ProfilePage() {
           birthLatLong: p.birthLatLong ?? undefined,
         });
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        setError('Session expired. Please sign in again.');
+        resetAuthAndRedirect();
+        return;
+      }
       setProfile(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [resetAuthAndRedirect]);
 
   useEffect(() => {
     loadProfile();
@@ -111,6 +126,11 @@ export default function ProfilePage() {
         setEditing(false);
       }
     } catch (err) {
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        setError('Session expired. Please sign in again.');
+        resetAuthAndRedirect();
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to save profile');
     } finally {
       setSaving(false);
@@ -129,6 +149,11 @@ export default function ProfilePage() {
       );
       setPhotoFile(null);
     } catch (err) {
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        setError('Session expired. Please sign in again.');
+        resetAuthAndRedirect();
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to upload photo');
     } finally {
       setSaving(false);
@@ -147,6 +172,11 @@ export default function ProfilePage() {
           : prev,
       );
     } catch (err) {
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        setError('Session expired. Please sign in again.');
+        resetAuthAndRedirect();
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to delete photo');
     }
   }
@@ -168,6 +198,11 @@ export default function ProfilePage() {
           : prev,
       );
     } catch (err) {
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        setError('Session expired. Please sign in again.');
+        resetAuthAndRedirect();
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to set primary');
     }
   }

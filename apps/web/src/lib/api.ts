@@ -1,7 +1,10 @@
-const getBaseUrl = () =>
+const getRawBaseUrl = () =>
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:3001';
 
-export const apiBase = () => `${getBaseUrl()}/api`;
+export const apiBase = () => {
+  const base = getRawBaseUrl();
+  return base.endsWith('/api') ? base : `${base}/api`;
+};
 
 export interface AuthTokens {
   accessToken: string;
@@ -26,7 +29,24 @@ export interface ApiError {
 
 async function parseResponse<T>(res: Response): Promise<T> {
   const text = await res.text();
-  const data = text ? (JSON.parse(text) as T) : ({} as T);
+  let data = {} as T;
+  if (text) {
+    try {
+      data = JSON.parse(text) as T;
+    } catch {
+      const contentType = res.headers.get('content-type') ?? '';
+      if (
+        contentType.includes('text/html') ||
+        text.startsWith('<!DOCTYPE') ||
+        text.startsWith('<html')
+      ) {
+        throw new Error(
+          `API returned HTML instead of JSON. Check NEXT_PUBLIC_API_URL (current base: ${getRawBaseUrl()}).`,
+        );
+      }
+      throw new Error(`Invalid API response format (HTTP ${res.status}).`);
+    }
+  }
   if (!res.ok) {
     const err = data as unknown as ApiError;
     const message = Array.isArray(err.message) ? err.message.join(' ') : err.message;
