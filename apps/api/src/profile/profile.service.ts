@@ -480,7 +480,7 @@ export class ProfileService {
       birthLatLong: profile.birthLatLong as ProfileResponse['birthLatLong'],
       photos: profile.photos.map((p) => ({
         id: p.id,
-        url: p.url,
+        url: this.storage.toPublicUrl(p.url),
         isPrimary: p.isPrimary,
         order: p.order,
         createdAt: p.createdAt.toISOString(),
@@ -540,7 +540,7 @@ export class ProfileService {
       emailVerified: profile.user.emailVerified,
       photos: profile.photos.map((p) => ({
         id: p.id,
-        url: p.url,
+        url: this.storage.toPublicUrl(p.url),
         isPrimary: p.isPrimary,
         order: p.order,
         createdAt: p.createdAt.toISOString(),
@@ -560,7 +560,7 @@ export class ProfileService {
   }): ProfilePhotoResponse {
     return {
       id: photo.id,
-      url: photo.url,
+      url: this.storage.toPublicUrl(photo.url),
       isPrimary: photo.isPrimary,
       order: photo.order,
       createdAt: photo.createdAt.toISOString(),
