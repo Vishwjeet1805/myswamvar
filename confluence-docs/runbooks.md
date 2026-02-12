@@ -19,6 +19,30 @@ docker-compose down
 
 Default ports: Web 3000, API 3001, PostgreSQL 5433, Redis 6379, MinIO 9000. Override with env vars (see `.env.example` and `docker-compose.yml`).
 
+## Domain reverse proxy (Apache)
+
+If you serve the app from a single domain (for example `https://myswamver.cloudtrim.in`), proxy both API and MinIO object paths so browser image URLs work:
+
+```apache
+ProxyPreserveHost On
+ProxyPass /api http://127.0.0.1:3001/api
+ProxyPassReverse /api http://127.0.0.1:3001/api
+
+ProxyPass /profiles http://127.0.0.1:9000/profiles
+ProxyPassReverse /profiles http://127.0.0.1:9000/profiles
+
+ProxyPass / http://127.0.0.1:3000/
+ProxyPassReverse / http://127.0.0.1:3000/
+```
+
+Also set in `.env`:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-domain/api
+S3_PUBLIC_BASE_URL=https://your-domain
+S3_BUCKET=profiles
+```
+
 ## Database migrations
 
 - **Local / dev**: From repo root:  
